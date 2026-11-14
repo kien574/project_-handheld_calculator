@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Lớp bóng đổ lệch về phía TRÁI và XUỐNG DƯỚI -->
+    <item android:top="6dp" android:left="0dp" android:right="6dp" android:bottom="0dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#601AACFF" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+    <!-- Lớp nút chính màu #1AACFF (dịch sang phải và lên trên để lộ bóng bên trái và dưới) -->
+    <item android:top="0dp" android:left="6dp" android:right="0dp" android:bottom="6dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#1AACFF" />
+            <corners android:radius="14dp" />
+        </shape>
+    </item>
+</layer-list>

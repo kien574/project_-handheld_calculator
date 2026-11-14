@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="color_primary">#f7f6fb</color>
+    <color name="color_btn_value">#fcfcfc</color>
+    <color name="color_btn_text_value">#1399f5</color>
+    <color name="color_btn_text_cancel">#838383</color>
+    <color name="color_btn_Operation">#aee1fc</color>
+    <color name="color_text_result">#3f4343</color>
+    <color name="color_btn_shadow">#BAE4FD</color>
+</resources>
