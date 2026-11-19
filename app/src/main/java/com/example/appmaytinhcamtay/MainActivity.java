@@ -3,7 +3,6 @@ package com.example.appmaytinhcamtay;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -25,8 +24,9 @@ public class MainActivity extends AppCompatActivity {
     private final StringBuilder expression = new StringBuilder();
     private final ExpressionEvaluator evaluator = new ExpressionEvaluator();
 
-    private CountDownTimer countDownTimer;
+    private TimeoutManager timeoutManager;
     private boolean isDegreeMode = true; // Trạng thái DEG / RAD cho phím deg
+    private boolean isNewCalculation = false; // Cờ kiểm tra sau khi bấm dấu =
     private Button degBtn; // Tham chiếu tới nút deg để đổi chữ
 
     // Định nghĩa cấu trúc phím cho phần lưới bên trái (hàng, cột, rowspan, colspan)
@@ -83,49 +83,6 @@ public class MainActivity extends AppCompatActivity {
 
     private int dpToPx(int dp) {
         return (int) (dp * getResources().getDisplayMetrics().density);
-    }
-
-    // Quản lý đồng hồ đếm ngược 10 giây (Timeout Manager)
-    private void startTimeoutTimer() {
-        stopTimeoutTimer();
-        progressBarTimeout.setProgress(0);
-        textPercent.setText("0%");
-
-        countDownTimer = new CountDownTimer(10000, 100) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                long elapsed = 10000 - millisUntilFinished;
-                int percent = (int) ((elapsed * 100) / 10000);
-                if (percent > 100) percent = 100;
-                progressBarTimeout.setProgress(percent);
-                textPercent.setText(percent + "%");
-            }
-
-            @Override
-            public void onFinish() {
-                progressBarTimeout.setProgress(100);
-                textPercent.setText("100%");
-                // Kịch bản quá hạn (Timeout Reset): xóa sạch biểu thức và kết quả
-                expression.setLength(0);
-                textExpression.setText("");
-                textResult.setText("");
-                progressBarTimeout.setProgress(0);
-                textPercent.setText("0%");
-            }
-        }.start();
-    }
-
-    private void stopTimeoutTimer() {
-        if (countDownTimer != null) {
-            countDownTimer.cancel();
-            countDownTimer = null;
-        }
-    }
-
-    private void resetTimeoutTimer() {
-        stopTimeoutTimer();
-        progressBarTimeout.setProgress(0);
-        textPercent.setText("0%");
     }
 
     // Kiểm tra phím có thuộc hàng khoa học phía trên không
@@ -189,6 +146,8 @@ public class MainActivity extends AppCompatActivity {
         keypad.removeAllViews();
         keypad.setColumnCount(4);
         keypad.setRowCount(6);
+        keypad.setClipChildren(false);
+        keypad.setClipToPadding(false);
 
         // ----- Phần bên trái: các phím trong cột 0-2 -----
         for (Key k : leftKeys) {
@@ -219,12 +178,24 @@ public class MainActivity extends AppCompatActivity {
         keypad.addView(degBtn);
 
         // ----- Phần bên phải: cột dọc chiếm hàng 1-5, chia chiều cao theo tỉ lệ 2:2:3:3 -----
-        LinearLayout rightColumn = new LinearLayout(this);
+
+        LinearLayout rightColumn = new LinearLayout(this) {
+            {
+                setChildrenDrawingOrderEnabled(true);
+            }
+
+            @Override
+            protected int getChildDrawingOrder(int childCount, int drawingPosition) {
+                return childCount - 1 - drawingPosition; // vẽ ngược: "=" trước, "*" sau cùng
+            }
+        };
         rightColumn.setOrientation(LinearLayout.VERTICAL);
 
         for (int i = 0; i < rightLabels.length; i++) {
             // FrameLayout bọc ngoài để lề nằm TRONG phần weight -> các hàng thẳng đúng với lưới trái
             FrameLayout cell = new FrameLayout(this);
+            cell.setClipChildren(false);
+            cell.setClipToPadding(false);
             cell.setLayoutParams(new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, 0, rightWeights[i]));
 
@@ -245,7 +216,10 @@ public class MainActivity extends AppCompatActivity {
         rightLp.width = 0;
         rightLp.height = 0;
         rightColumn.setLayoutParams(rightLp);
-        keypad.addView(rightColumn);
+        rightColumn.setClipChildren(false);
+        rightColumn.setClipToPadding(false);
+        // thêm đầu tiên để các phím trái vẽ đè lên
+        keypad.addView(rightColumn, 0);
     }
 
     private void onKeyClick(String label) {
@@ -254,7 +228,8 @@ public class MainActivity extends AppCompatActivity {
                 expression.setLength(0);          // xóa sạch biểu thức
                 textExpression.setText("");
                 textResult.setText("");
-                resetTimeoutTimer();              // Khởi tạo/reset bộ đếm về 0%
+                timeoutManager.reset();           // Khởi tạo/reset bộ đếm về 0%
+                isNewCalculation = false;
                 break;
 
             case "⌫":
@@ -262,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
                     expression.deleteCharAt(expression.length() - 1);  // xóa 1 ký tự cuối
                     textExpression.setText(expression.toString());
                     if (expression.length() == 0) {
-                        resetTimeoutTimer();
+                        timeoutManager.reset();
                     }
                 }
                 break;
@@ -271,25 +246,38 @@ public class MainActivity extends AppCompatActivity {
                 if (expression.length() == 0) break;
                 try {
                     // Dừng ngay lập tức bộ đếm thời gian khi bấm dấu =
-                    stopTimeoutTimer();
+                    timeoutManager.stop();
                     double result = evaluator.evaluate(expression.toString(), isDegreeMode);
                     textResult.setText("=" + ResultFormatter.format(result));   // luôn là String
+                    isNewCalculation = true; // Đánh dấu đã xong phép tính, bấm số mới sẽ bắt đầu tính mới
                 } catch (ArithmeticException e) {
                     textResult.setText("Lỗi: chia cho 0");
+                    isNewCalculation = true;
                 } catch (IllegalArgumentException e) {
                     textResult.setText("Biểu thức không hợp lệ");
+                    isNewCalculation = true;
                 }
                 break;
 
             case "sin":
-                if (expression.length() == 0) startTimeoutTimer();
+                if (isNewCalculation) {
+                    expression.setLength(0);
+                    textResult.setText("");
+                    isNewCalculation = false;
+                }
+                if (expression.length() == 0) timeoutManager.start();
                 expression.append("sin(");
                 textExpression.setText(expression.toString());
                 break;
 
             case "e":
             case "μ":
-                if (expression.length() == 0) startTimeoutTimer();
+                if (isNewCalculation) {
+                    expression.setLength(0);
+                    textResult.setText("");
+                    isNewCalculation = false;
+                }
+                if (expression.length() == 0) timeoutManager.start();
                 expression.append(label);
                 textExpression.setText(expression.toString());
                 break;
@@ -316,9 +304,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void appendKey(String label) {
+        // Nếu vừa bấm dấu = xong và bắt đầu bấm số mới -> Xóa biểu thức cũ, bắt đầu phép tính mới
+        if (isNewCalculation) {
+            expression.setLength(0);
+            textResult.setText("");
+            isNewCalculation = false;
+        }
+
         // Nếu biểu thức đang trống và người dùng bấm ký tự số hoặc phép tính đầu tiên -> Kích hoạt bộ đếm 10 giây
         if (expression.length() == 0) {
-            startTimeoutTimer();
+            timeoutManager.start();
         }
 
         if (isOperator(label)) {
@@ -372,7 +367,14 @@ public class MainActivity extends AppCompatActivity {
         textPercent = findViewById(R.id.textPercent);
         keypad = findViewById(R.id.keypad);
 
+        timeoutManager = new TimeoutManager(progressBarTimeout, textPercent, () -> {
+            expression.setLength(0);
+            textExpression.setText("");
+            textResult.setText("");
+            isNewCalculation = false;
+        });
+
         buildKeypad();
-        resetTimeoutTimer();
+        timeoutManager.reset();
     }
 }

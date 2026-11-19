@@ -13,11 +13,11 @@
 <!-- Thanh tiến trình thời gian nhập số -->
     <LinearLayout
         android:id="@+id/layoutTimeout"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginTop="24dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -58,7 +58,7 @@
 <!--Vùng hiển thị-->
     <TextView
         android:id="@+id/textExpression"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text=""
         android:gravity="end"
@@ -66,9 +66,9 @@
         android:textSize="22sp"
         android:textStyle="bold"
         android:textColor="@color/color_btn_text_cancel"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="64dp"
         android:paddingEnd="16dp"
         app:layout_constraintTop_toBottomOf="@+id/layoutTimeout"
         app:layout_constraintStart_toStartOf="parent"
@@ -76,7 +76,7 @@
 
     <TextView
         android:id="@+id/textResult"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text=""
         android:gravity="end"
@@ -84,19 +84,20 @@
         android:textSize="36sp"
         android:textStyle="bold"
         android:textColor="@color/color_text_result"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginTop="8dp"
         android:paddingEnd="16dp"
         app:layout_constraintTop_toBottomOf="@+id/textExpression"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
 <!--Bàn phím-->
     <GridLayout
         android:id="@+id/keypad"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="84dp"
+        android:layout_marginTop="64dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"

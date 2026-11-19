@@ -10,6 +10,6 @@ public class ResultFormatter {
             new DecimalFormat("#,##0.########", DecimalFormatSymbols.getInstance(Locale.US));
 
     public static String format(double value) {
-        return FORMAT.format(value);   // 9454.0 -> "9,454"
+        return FORMAT.format(value);
     }
 }
