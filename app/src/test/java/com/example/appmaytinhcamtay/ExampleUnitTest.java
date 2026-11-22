@@ -13,6 +13,12 @@ public class ExampleUnitTest {
     }
 
     @Test
+    public void testSubtractionNegative() {
+        ExpressionEvaluator evaluator = new ExpressionEvaluator();
+        assertEquals(-3.0, evaluator.evaluate("2-5"), 0.0001);
+    }
+
+    @Test
     public void testOperatorPrecedence() {
         ExpressionEvaluator evaluator = new ExpressionEvaluator();
         assertEquals(14.0, evaluator.evaluate("2+3*4"), 0.0001);
@@ -21,9 +27,7 @@ public class ExampleUnitTest {
     @Test
     public void testDivisionByZero() {
         ExpressionEvaluator evaluator = new ExpressionEvaluator();
-        assertThrows(ArithmeticException.class, () -> {
-            evaluator.evaluate("5/0");
-        });
+        assertThrows(ArithmeticException.class, () -> evaluator.evaluate("5/0"));
     }
 
     @Test
